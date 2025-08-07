@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Mav.Healthcheck.Infrastructure.Database.Setup;
 using Mav.Healthcheck.Infrastructure.Telemetry;
 
 namespace Mav.Healthcheck.Api.Setup;
@@ -26,6 +27,14 @@ public static class ServiceRegistrations
             options.SubstituteApiVersionInUrl = true;
         });
 
-        services.AddHealthChecks();
+        services.AddMongoDbDependencies(config);
+
+        services.ConfigureHealthChecks();
+    }
+
+    private static void ConfigureHealthChecks(this IServiceCollection services)
+    {
+        services.AddHealthChecks()
+            .AddCheck<MongoDbHealthCheck>("mongodb", tags: ["db", "mongo"]);
     }
 }
