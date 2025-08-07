@@ -1,0 +1,6 @@
+services:
+  mav.healthcheck.api:
+    image: ${DOCKER_REGISTRY-}mavhealthcheckapi
+    build:
+      context: .
+      dockerfile: src/Mav.Healthcheck.Api/Dockerfile
