@@ -1,12 +1,4 @@
 services:
-  mav.healthcheck.api:
-    image: ${DOCKER_REGISTRY-}mavhealthcheckapi
-    build:
-      context: .
-      dockerfile: src/Mav.Healthcheck.Api/Dockerfile
-    networks:
-      - cas-tenant
-
   localstack:
     image: localstack/localstack:3.0.2
     ports:

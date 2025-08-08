@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Mav.Healthcheck.Infrastructure.Database.Setup;
+using Mav.Healthcheck.Infrastructure.Messaging.Setup;
 using Mav.Healthcheck.Infrastructure.Telemetry;
 
 namespace Mav.Healthcheck.Api.Setup;
@@ -29,12 +30,20 @@ public static class ServiceRegistrations
 
         services.AddMongoDbDependencies(config);
 
+        services.AddDefaultAWSOptions(config.GetAWSOptions());
+
+        services.AddServiceBusSenderDependencies(config);
+
+        services.AddServiceBusReceiverDependencies(config);
+
         services.ConfigureHealthChecks();
     }
 
     private static void ConfigureHealthChecks(this IServiceCollection services)
     {
         services.AddHealthChecks()
-            .AddCheck<MongoDbHealthCheck>("mongodb", tags: ["db", "mongo"]);
+            .AddCheck<MongoDbHealthCheck>("mongodb", tags: ["db", "mongo"])
+            .AddCheck<AwsSnsHealthCheck>("aws_sns", tags: ["aws", "sns"])
+            .AddCheck<AwsSqsHealthCheck>("aws_sqs", tags: ["aws", "sqs"]);
     }
 }

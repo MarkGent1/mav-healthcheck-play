@@ -4,9 +4,16 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ApplicationInsights__InstrumentationKey=12345
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - AWS__OverrideServiceURL=Yes
+      - AWS__ServiceURL=http://localstack:4566
+      - Mongo__DatabaseUri=mongodb://host.docker.internal:27017
+      - Mongo__DatabaseName=mav-db
     ports:
       - "80"
       - "443"
+    env_file:
+      - 'compose/aws.env'
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
