@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Mav.Healthcheck.Infrastructure.Database.Setup;
 using Mav.Healthcheck.Infrastructure.Messaging.Setup;
+using Mav.Healthcheck.Infrastructure.Storage.Setup;
 using Mav.Healthcheck.Infrastructure.Telemetry;
 
 namespace Mav.Healthcheck.Api.Setup;
@@ -36,6 +37,9 @@ public static class ServiceRegistrations
 
         services.AddServiceBusReceiverDependencies(config);
 
+        // services.AddS3ClientDependencies(config);
+        services.AddS3ClientDependenciesWithFactory();
+
         services.ConfigureHealthChecks();
     }
 
@@ -44,6 +48,8 @@ public static class ServiceRegistrations
         services.AddHealthChecks()
             .AddCheck<MongoDbHealthCheck>("mongodb", tags: ["db", "mongo"])
             .AddCheck<AwsSnsHealthCheck>("aws_sns", tags: ["aws", "sns"])
-            .AddCheck<AwsSqsHealthCheck>("aws_sqs", tags: ["aws", "sqs"]);
+            .AddCheck<AwsSqsHealthCheck>("aws_sqs", tags: ["aws", "sqs"])
+            // .AddCheck<AwsS3HealthCheck>("aws_s3", tags: ["aws", "s3"])
+            .AddCheck<AwsS3HealthCheckWithFactory>("aws_s3", tags: ["aws", "s3"]);
     }
 }

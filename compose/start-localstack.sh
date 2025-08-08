@@ -71,3 +71,40 @@ echo "Subscription complete."
 
 echo "Waiting for SNS to be ready..."
 awslocal sns list-topics
+
+echo "Bootstrapping S3 setup..."
+
+# Check if bucket already exists
+existing_bucket=$(awslocal s3api list-buckets \
+  --query "Buckets[?Name=='mav-dev-bucket'].Name" \
+  --output text)
+
+if [ "$existing_bucket" == "mav-dev-bucket" ]; then
+  echo "S3 bucket already exists: mav-dev-bucket"
+else
+  awslocal s3api create-bucket --bucket mav-dev-bucket --region eu-north-1 \
+    --create-bucket-configuration LocationConstraint=eu-north-1
+  echo "S3 bucket created: mav-dev-bucket"
+fi
+
+# Optional: Add a test object
+echo "Adding test object to S3 bucket..."
+echo "Hello from LocalStack!" > /tmp/test-object.txt
+awslocal s3 cp /tmp/test-object.txt s3://mav-dev-bucket/test-object.txt
+
+# Optional: List contents
+echo "Listing contents of mav-dev-bucket:"
+awslocal s3 ls s3://mav-dev-bucket/
+
+# Check if external bucket already exists
+existing_bucket=$(awslocal s3api list-buckets \
+  --query "Buckets[?Name=='mav-external-dev-bucket'].Name" \
+  --output text)
+
+if [ "$existing_bucket" == "mav-external-dev-bucket" ]; then
+  echo "S3 bucket already exists: mav-external-dev-bucket"
+else
+  awslocal s3api create-bucket --bucket mav-external-dev-bucket --region eu-north-1 \
+    --create-bucket-configuration LocationConstraint=eu-north-1
+  echo "S3 bucket created: mav-external-dev-bucket"
+fi

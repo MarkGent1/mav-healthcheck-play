@@ -9,6 +9,14 @@ services:
       - AWS__ServiceURL=http://localstack:4566
       - Mongo__DatabaseUri=mongodb://host.docker.internal:27017
       - Mongo__DatabaseName=mav-db
+      - S3Clients__ClientA__ServiceURL=http://localstack:4566
+      - S3Clients__ClientA__AccessKey=test
+      - S3Clients__ClientA__SecretKey=test
+      - S3Clients__ClientA__Region=eu-north-1
+      - S3Clients__ClientB__ServiceURL=http://localstack:4566
+      - S3Clients__ClientB__AccessKey=test
+      - S3Clients__ClientB__SecretKey=test
+      - S3Clients__ClientB__Region=eu-north-1
     ports:
       - "80"
       - "443"

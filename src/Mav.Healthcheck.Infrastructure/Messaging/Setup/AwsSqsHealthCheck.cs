@@ -5,11 +5,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Mav.Healthcheck.Infrastructure.Messaging.Setup;
 
-public class AwsSqsHealthCheck(IAmazonSQS sqsClient,
-    ServiceBusReceiverConfiguration serviceBusReceiverConfiguration) : IHealthCheck
+public class AwsSqsHealthCheck(IAmazonSQS sqsClient, ServiceBusReceiverConfiguration config) : IHealthCheck
 {
     private readonly IAmazonSQS _sqsClient = sqsClient ?? throw new ArgumentNullException(nameof(sqsClient));
-    private readonly ServiceBusReceiverConfiguration _serviceBusReceiverConfiguration = serviceBusReceiverConfiguration ?? throw new ArgumentNullException(nameof(serviceBusReceiverConfiguration));
+    private readonly ServiceBusReceiverConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
 
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
@@ -17,25 +16,39 @@ public class AwsSqsHealthCheck(IAmazonSQS sqsClient,
     {
         try
         {
-            var queueResponse = await _sqsClient.GetQueueUrlAsync(_serviceBusReceiverConfiguration.DefaultQueueName, cancellationToken);
-            var queueUrl = queueResponse.QueueUrl;
+            var queueResponse = await _sqsClient.GetQueueUrlAsync(_config.DefaultQueueName, cancellationToken);
 
-            var queueAttributesResponse = await _sqsClient.GetQueueAttributesAsync(new GetQueueAttributesRequest
+            if (queueResponse.HttpStatusCode != System.Net.HttpStatusCode.OK || string.IsNullOrWhiteSpace(queueResponse.QueueUrl))
             {
-                QueueUrl = queueUrl,
-                AttributeNames = ["QueueArn"]
-            }, cancellationToken);
-
-            if (queueResponse.HttpStatusCode == System.Net.HttpStatusCode.OK)
-            {
-                return HealthCheckResult.Healthy("SQS is reachable.");
+                return HealthCheckResult.Degraded($"SQS queue '{_config.DefaultQueueName}' returned non-OK status or empty URL.");
             }
 
-            return HealthCheckResult.Degraded("SQS returned non-OK status.");
+            var attributesResponse = await _sqsClient.GetQueueAttributesAsync(new GetQueueAttributesRequest
+            {
+                QueueUrl = queueResponse.QueueUrl,
+                AttributeNames = [QueueAttributeName.QueueArn]
+            }, cancellationToken);
+
+            if (attributesResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return HealthCheckResult.Degraded($"SQS queue '{_config.DefaultQueueName}' attributes fetch returned non-OK status.");
+            }
+
+            var queueArn = attributesResponse.Attributes.GetValueOrDefault(QueueAttributeName.QueueArn);
+            if (string.IsNullOrWhiteSpace(queueArn))
+            {
+                return HealthCheckResult.Degraded($"SQS queue '{_config.DefaultQueueName}' is missing ARN attribute.");
+            }
+
+            return HealthCheckResult.Healthy($"SQS queue '{_config.DefaultQueueName}' is reachable. ARN: {queueArn}");
+        }
+        catch (QueueDoesNotExistException ex)
+        {
+            return HealthCheckResult.Unhealthy($"SQS queue '{_config.DefaultQueueName}' does not exist.", ex);
         }
         catch (Exception ex)
         {
-            return HealthCheckResult.Unhealthy("Error accessing SQS.", ex);
+            return HealthCheckResult.Unhealthy($"Error accessing SQS queue '{_config.DefaultQueueName}'.", ex);
         }
     }
 }
