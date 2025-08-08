@@ -17,9 +17,9 @@ public class HealthcheckControllerTests : IClassFixture<AppTestFixture>
     public async Task GivenValidHealthCheckRequest_ShouldSucceed()
     {
         var response = await _appTestFixture.HttpClient.GetAsync("health");
-        response.EnsureSuccessStatusCode();
-
         var responseBody = await response.Content.ReadAsStringAsync();
-        responseBody.Should().NotBeNullOrEmpty().And.Be("Healthy");
+        
+        response.EnsureSuccessStatusCode();
+        responseBody.Should().NotBeNullOrEmpty().And.Contain("\"status\": \"Healthy\"");
     }
 }

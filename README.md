@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-### 1.1 Purpose of this Repository
+### 1.1 Purpose of this repository
 
 The intention for this repository is to act as a personal 'Playground' to demonstrate how to use the .Net HealthCheck features.
 
@@ -100,4 +100,20 @@ The `AWS S3` implementation uses a factory to allow for multiple clients to be r
     }
   }
 }
+```
+
+## 3. Running the tests
+
+### 3.1. HealthcheckControllerTest
+
+To successfully run the single test, you must 1st start docker compose.
+
+```
+docker-compose -f docker-compose-integration-tests.yml up -d
+```
+
+Once complete, please remember to tear this down.
+
+```
+docker-compose -f docker-compose-integration-tests.yml down
 ```
