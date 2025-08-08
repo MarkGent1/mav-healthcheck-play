@@ -11,6 +11,18 @@ public class AppWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        Environment.SetEnvironmentVariable("AWS__OverrideServiceURL", "Yes");
+        Environment.SetEnvironmentVariable("AWS__ServiceURL", "http://localhost:4566");
+        Environment.SetEnvironmentVariable("Mongo__DatabaseUri", "mongodb://127.0.0.1:27017");
+        Environment.SetEnvironmentVariable("S3Clients__ClientA__ServiceURL", "http://localhost:4566");
+        Environment.SetEnvironmentVariable("S3Clients__ClientA__AccessKey", "test");
+        Environment.SetEnvironmentVariable("S3Clients__ClientA__SecretKey", "test");
+        Environment.SetEnvironmentVariable("S3Clients__ClientA__Region", "eu-north-1");
+        Environment.SetEnvironmentVariable("S3Clients__ClientB__ServiceURL", "http://localhost:4566");
+        Environment.SetEnvironmentVariable("S3Clients__ClientB__AccessKey", "test");
+        Environment.SetEnvironmentVariable("S3Clients__ClientB__SecretKey", "test");
+        Environment.SetEnvironmentVariable("S3Clients__ClientB__Region", "eu-north-1");
+
         builder.ConfigureServices(services =>
         {
             RemoveService<IHealthCheckPublisher>(services);
